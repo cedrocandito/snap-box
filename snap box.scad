@@ -9,7 +9,7 @@ length = 100;
 width = 60;
 // Size of box inside, along the Z axis Add 2 times shell_thickness to calculate the outer size.
 height = 30;
-// Height of the lid wall. Must be greater than snap_band_width and less than the height of the box.
+// Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
 lid_wall_height = 10;
 // Overall thickness of the box.
 shell_thickness = 2;
@@ -43,8 +43,8 @@ snap_band_y = lid_wall_height / 2;	// (relative to lid wall)
 snap_band_r = (snap_band_thickness*snap_band_thickness + snap_band_width*snap_band_width/4) / (2*snap_band_thickness);
 snap_band_center_offset = snap_band_r  - snap_band_thickness;
 
-assert(lid_wall_height > snap_band_width, "lid_wall_height must be greater than snap_band_width");
-assert(lid_wall_height < height, "lid_wall_height must be less than the height of the box");
+assert(lid_wall_height >= snap_band_width, "lid_wall_height must be greater or equal than snap_band_width");
+assert(lid_wall_height <= height, "lid_wall_height must be less or equal than the height of the box");
 
 if (render_part=="box")
 {
