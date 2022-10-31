@@ -10,7 +10,7 @@ width = 60;
 // Size of box inside, along the Z axis Add 2 times shell_thickness to calculate the outer size.
 height = 30;
 // Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
-lid_wall_height = 10;
+lid_wall_height = 7;
 // Overall thickness of the box.
 shell_thickness = 2;
 // Radius of the box corner bevels.
@@ -19,7 +19,7 @@ corner_radius = 1;
 /* [Snap band] */
 
 // Height of the snap band along the lid-to-box interface.
-snap_band_width = 3;
+snap_band_width = 2.5;
 // Thickness of the snap band along the lid-to-box interface.
 snap_band_thickness = 0.2;
 // Gap between box and lid.
