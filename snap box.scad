@@ -21,9 +21,9 @@ corner_radius = 1;
 // Height of the snap band along the lid-to-box interface.
 snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
-snap_band_thickness = 0.4;
+snap_band_thickness = 0.2;
 // Gap between box and lid.
-gap = 0.3;
+gap = 0.15;
 
 /* [Resolution] */
 // Minimum size of a fragment.
@@ -129,35 +129,43 @@ module lid()
 		lid_indent_offset = shell_half_thickness - half_gap;
 		lid_indent_size = outer_size - [shell_thickness-gap,shell_thickness-gap,0];
 		translate([lid_indent_offset, lid_indent_offset, shell_thickness])
-		union()
+		intersection()
 		{
-			translate([0,0,0.01])
-				cube(lid_indent_size);
-		
-			// snap band
-			translate([0,0,snap_band_y])
+			union()
 			{
-				// left
-				translate([snap_band_center_offset,0,0])
-					rotate([-90,0,0])
-						cylinder(r=snap_band_r, h=lid_indent_size[1]);
-				
-				// right
-				translate([lid_indent_size[0] - snap_band_center_offset,0,0])
-					rotate([-90,0,0])
-						cylinder(r=snap_band_r, h=lid_indent_size[1]);
-				
-				// front
-				translate([0,snap_band_center_offset,0])
-					rotate([0,90,0])
-						cylinder(r=snap_band_r, h=lid_indent_size[0]);
-				
-				
-				// back
-				translate([0,lid_indent_size[1] - snap_band_center_offset,0])
-					rotate([0,90,0])
-						cylinder(r=snap_band_r, h=lid_indent_size[0]);
+				translate([0,0,0.001])
+					cube(lid_indent_size);
+			
+				// snap band
+				translate([0,0,snap_band_y])
+				{
+					// left
+					translate([snap_band_center_offset,0,0])
+						rotate([-90,0,0])
+							cylinder(r=snap_band_r, h=lid_indent_size[1]);
+					
+					// right
+					translate([lid_indent_size[0] - snap_band_center_offset,0,0])
+						rotate([-90,0,0])
+							cylinder(r=snap_band_r, h=lid_indent_size[1]);
+					
+					// front
+					translate([0,snap_band_center_offset,0])
+						rotate([0,90,0])
+							cylinder(r=snap_band_r, h=lid_indent_size[0]);
+					
+					
+					// back
+					translate([0,lid_indent_size[1] - snap_band_center_offset,0])
+						rotate([0,90,0])
+							cylinder(r=snap_band_r, h=lid_indent_size[0]);
+				}
 			}
+			
+			/* This intersections is needed to prevent the snap band cylinders
+			to "carve" the floor. */
+			translate([0,0,0.001])
+				cube(outer_size);
 		}
 	}
 }
