@@ -30,7 +30,7 @@ snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
 snap_band_thickness = 0.4;
 // Gap between box and lid.
-gap = 0.15;
+gap = 0.1;
 
 /* [Resolution] */
 // Minimum size of a fragment.
