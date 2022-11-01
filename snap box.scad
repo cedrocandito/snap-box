@@ -27,7 +27,7 @@ gap = 0.15;
 
 /* [Resolution] */
 // Minimum size of a fragment.
-$fs = 0.2;
+$fs = 0.3;
 // Minimum angle for a fragment (degrees).
 $fa = 3;
 

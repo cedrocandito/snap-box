@@ -1,0 +1,20 @@
+{
+    "parameterSets": {
+        "Test": {
+            "$fa": "3",
+            "$fs": "0.2",
+            "corner_radius": "1",
+            "gap": "0.15",
+            "height": "25",
+            "length": "60",
+            "lid_wall_height": "7",
+            "render_part": "box",
+            "shell_thickness": "2",
+            "snap_band_thickness": "0.2",
+            "snap_band_width": "2.5",
+            "width": "40"
+        }
+    },
+    "parameterSets": "",
+    "fileFormatVersion": "1"
+}
