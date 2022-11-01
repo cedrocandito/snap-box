@@ -128,11 +128,13 @@ module lid()
 		// inner space
 		lid_indent_offset = shell_half_thickness - half_gap;
 		lid_indent_size = outer_size - [shell_thickness-gap,shell_thickness-gap,0];
-		translate([lid_indent_offset, lid_indent_offset, shell_thickness])
+		
 		intersection()
 		{
+			translate([lid_indent_offset, lid_indent_offset, shell_thickness])
 			union()
 			{
+				
 				translate([0,0,0.001])
 					cube(lid_indent_size);
 			
@@ -164,7 +166,7 @@ module lid()
 			
 			/* This intersections is needed to prevent the snap band cylinders
 			to "carve" the floor. */
-			translate([0,0,0.001])
+			translate([0,0,shell_thickness+0.001])
 				cube(outer_size);
 		}
 	}
