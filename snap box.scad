@@ -7,21 +7,28 @@ render_part = "box"; // [box,lid]
 length = 100;
 // Size of box inside, along the X axis. Add 2 times shell_thickness to calculate the outer size.
 width = 60;
-// Size of box inside, along the Z axis Add 2 times shell_thickness to calculate the outer size.
+// Size of box inside, along the Z axis. Add 2 times shell_thickness to calculate the outer size.
 height = 30;
 // Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
-lid_wall_height = 7;
+lid_wall_height = 12;
 // Overall thickness of the box.
 shell_thickness = 2;
-// Radius of the box corner bevels.
-corner_radius = 1;
+
+/* [Options] */
+
+// Radius of the box corner bevels. Don't make it too large or the snap band will punch a hole through the corners.
+corner_radius = 1.3;
+// Don't fix the snap band wall at the corners, make four "flaps" instead; the lid will snap easily.
+snappy_flaps = true;
+// Add a slot in the front and back walls to help grabbing cards in the box. If 0 no slot will be cut. Note that for this to be aesthetically pleasing lid_wall_height should be equal to height.
+cards_handling_slot_size = 0;
 
 /* [Snap band] */
 
 // Height of the snap band along the lid-to-box interface.
-snap_band_width = 2.5;
+snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
-snap_band_thickness = 0.2;
+snap_band_thickness = 0.4;
 // Gap between box and lid.
 gap = 0.15;
 
@@ -62,6 +69,7 @@ else
 
 module box()
 {
+	box_indent_size = outer_size - [shell_thickness+gap,shell_thickness+gap,0];
 	union()
 	{
 		difference()
@@ -83,7 +91,6 @@ module box()
 					translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
 					union()
 					{
-						box_indent_size = outer_size - [shell_thickness+gap,shell_thickness+gap,0];
 						cube(box_indent_size);
 						
 						// snap band
@@ -112,6 +119,28 @@ module box()
 									cylinder(r=snap_band_r, h=box_indent_size[0]);
 						}
 					}
+				}
+			}
+			
+			// snappy flaps separator holes
+			if (snappy_flaps)
+			{
+				flap_holes_size = [shell_thickness * 1.5, shell_thickness * 1.5, lid_wall_height + 0.01];
+				translate([0,0,shell_thickness + height - lid_wall_height])
+				{
+					cube(flap_holes_size);
+					translate([outer_size[0]-flap_holes_size[0],0,0]) cube(flap_holes_size);
+					translate([0,outer_size[1]-flap_holes_size[1],0]) cube(flap_holes_size);
+					translate([outer_size[0]-flap_holes_size[0],outer_size[1]-flap_holes_size[1],0]) cube(flap_holes_size);
+				}
+			}
+			
+			// card handling slot
+			if (cards_handling_slot_size > 0)
+			{
+				translate([(outer_size[0]-cards_handling_slot_size)/2,-0.01,shell_thickness])
+				{
+					cube([cards_handling_slot_size,outer_size[1]+0.02,inner_size[2]+0.01]);
 				}
 			}
 		}
