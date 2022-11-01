@@ -79,8 +79,7 @@ module box()
 			
 			// inner space
 			translate([shell_thickness, shell_thickness, shell_thickness])
-				translate([0,0,0.01])
-					cube(inner_size);
+				cube(inner_size + [0,0,0.01]);
 			
 			// indent
 			translate([0,0,shell_thickness + height - lid_wall_height])
@@ -163,9 +162,7 @@ module lid()
 			translate([lid_indent_offset, lid_indent_offset, shell_thickness])
 			union()
 			{
-				
-				translate([0,0,0.001])
-					cube(lid_indent_size);
+				cube(lid_indent_size);
 			
 				// snap band
 				translate([0,0,snap_band_y])
