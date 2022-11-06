@@ -12,7 +12,7 @@ height = 30;
 // Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
 lid_wall_height = 12;
 // Overall thickness of the box.
-shell_thickness = 2;
+shell_thickness = 2.2;
 
 /* [Options] */
 
@@ -22,6 +22,12 @@ corner_radius = 1.3;
 snappy_flaps = true;
 // Add a slot in the front and back walls to help grabbing cards in the box. If 0 no slot will be cut. Note that for this to be aesthetically pleasing lid_wall_height should be equal to height.
 cards_handling_slot_size = 0;
+// Internal dividers along the x axis; it is a list of percentages of the box's width. If the total is less than 100% the remaining space will be added on the right of the last divider . For example you can specify [15,15,25] to get 4 spaces of 15%, 15%, 25% and 45% of the box's width.
+dividers_x = [];
+// Internal dividers along the y axis; see dividers_x for a description.
+dividers_y = [];
+// Thickness of the dividers (ignored if both dividers_x and dividers_y are empty).
+dividers_thickness = 0.8;
 
 /* [Snap band] */
 
@@ -63,6 +69,7 @@ snap_band_center_offset = snap_band_r  - snap_band_thickness;
 
 assert(lid_wall_height >= snap_band_width, "lid_wall_height must be greater or equal than snap_band_width");
 assert(lid_wall_height <= height, "lid_wall_height must be less or equal than the height of the box");
+assert(snap_band_offset >= 0,"snap_band_offset must be greater or equal than zero");
 
 if (render_part=="box")
 {
@@ -154,6 +161,40 @@ module box()
 				}
 			}
 		}
+		
+		// dividers
+		translate([shell_thickness, shell_thickness, shell_thickness])
+		{
+			// x axis
+			if (is_list(dividers_x) && len(dividers_x)>0)
+			{
+				for (i=[0:len(dividers_x)-1])
+				{
+					percent_sum = sum_up_to_index_n(dividers_x,i);
+					assert(percent_sum < 100,"The sum of dividers_x must be less than 100");
+					offset = percent_sum*width/100;
+					translate([offset,0,0])
+					{
+						cube([dividers_thickness,length,height]);
+					}
+				}
+			}
+			
+			// y axis
+			if (is_list(dividers_y) && len(dividers_y)>0)
+			{
+				for (i=[0:len(dividers_y)-1])
+				{
+					percent_sum = sum_up_to_index_n(dividers_y,i);
+					assert(percent_sum < 100,"The sum of dividers_y must be less than 100");
+					offset = percent_sum*length/100;
+					translate([0,offset,0])
+					{
+						cube([width,dividers_thickness,height]);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -229,3 +270,6 @@ module half_rounded_box(size,r,bottom=false,center=false)
 				half_sphere(r);
 		}
 }
+
+/* Return the sum of the elements of the list up to index n. */
+function sum_up_to_index_n(list, n) = n>=0 ? list[n] + sum_up_to_index_n(list,n-1) : 0;
