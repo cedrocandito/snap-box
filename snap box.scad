@@ -29,6 +29,10 @@ cards_handling_slot_size = 0;
 snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
 snap_band_thickness = 0.4;
+// Position of the snap band: top, bottom or middle of the lid wall.
+snap_band_position = "top"; // [top,middle,bottom]
+// Distance between the snaop band and the top or bottom (depending on snap_band_position) edge of the lid wall. Ignored if snap_band_position is "middle".
+snap_band_offset = 3;
 // Gap between box and lid.
 gap = 0.1;
 
@@ -46,7 +50,14 @@ inner_size = [width, length, height];
 outer_size = [width + 2*shell_thickness, length + 2*shell_thickness, height + 2*shell_thickness];
 box_outer_size = outer_size - [0,0,shell_thickness];
 lid_outer_size = [outer_size[0],outer_size[1],shell_thickness + lid_wall_height];
-snap_band_y = lid_wall_height / 2;	// (relative to lid wall)
+snap_band_y = snap_band_position=="bottom"
+	? snap_band_offset
+	: snap_band_position == "top"
+		? lid_wall_height - snap_band_offset
+		: snap_band_position=="middle"
+			? lid_wall_height / 2
+			: undef;
+assert(is_num(snap_band_y),"snap_band_position must be one of 'top', 'bottom', 'middle'");
 snap_band_r = (snap_band_thickness*snap_band_thickness + snap_band_width*snap_band_width/4) / (2*snap_band_thickness);
 snap_band_center_offset = snap_band_r  - snap_band_thickness;
 
