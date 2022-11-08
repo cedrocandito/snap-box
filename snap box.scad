@@ -12,12 +12,12 @@ height = 30;
 // Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
 lid_wall_height = 12;
 // Overall thickness of the box.
-shell_thickness = 2.2;
+shell_thickness = 1.8;
 
 /* [Options] */
 
 // Radius of the box corner bevels. Don't make it too large or the snap band will punch a hole through the corners.
-corner_radius = 1.3;
+corner_radius = 1;
 // Don't fix the snap band wall at the corners, make four "flaps" instead; the lid will snap easily.
 snappy_flaps = true;
 // Add a slot in the front and back walls to help grabbing cards in the box. If 0 no slot will be cut. Note that for this to be aesthetically pleasing lid_wall_height should be equal to height.
@@ -34,17 +34,23 @@ dividers_thickness = 0.8;
 // Height of the snap band along the lid-to-box interface.
 snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
-snap_band_thickness = 0.4;
+snap_band_thickness = 0.45;
 // Position of the snap band: top, bottom or middle of the lid wall.
 snap_band_position = "top"; // [top,middle,bottom]
 // Distance between the snaop band and the top or bottom (depending on snap_band_position) edge of the lid wall. Ignored if snap_band_position is "middle".
 snap_band_offset = 3;
+// Percentage of length/width to cover with the snap band. Lower values make the lid stronger and allow a thinner shell thickness, higher values make the box more... well, "snappy".
+snap_band_percentage = 50;	// [1:100]
+// How much smaller the snap band ridge radius is than the groove radius.
+snap_band_ridge_difference_radius = 0.1;
+// How much longer the snap band groove is than the ridge.
+snap_band_ridge_difference_length = 4;
 // Gap between box and lid.
 gap = 0.1;
 
 /* [Resolution] */
 // Minimum size of a fragment.
-$fs = 0.3;
+$fs = 0.2;
 // Minimum angle for a fragment (degrees).
 $fa = 3;
 
@@ -65,7 +71,7 @@ snap_band_y = snap_band_position=="bottom"
 			: undef;
 assert(is_num(snap_band_y),"snap_band_position must be one of 'top', 'bottom', 'middle'");
 snap_band_r = (snap_band_thickness*snap_band_thickness + snap_band_width*snap_band_width/4) / (2*snap_band_thickness);
-snap_band_center_offset = snap_band_r  - snap_band_thickness;
+snap_band_center_offset = snap_band_r - snap_band_thickness;
 
 assert(lid_wall_height >= snap_band_width, "lid_wall_height must be greater or equal than snap_band_width");
 assert(lid_wall_height <= height, "lid_wall_height must be less or equal than the height of the box");
@@ -100,40 +106,42 @@ module box()
 				cube(inner_size + [0,0,0.01]);
 			
 			// indent
-			translate([0,0,shell_thickness + height - lid_wall_height])
+			translate([-0.01,-0.01,shell_thickness + height - lid_wall_height])
 			{
 				difference()
 				{
-					cube(outer_size);
+					cube(outer_size+[0.02,0.02,0.02]);
 					translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
 					union()
 					{
 						cube(box_indent_size);
 						
 						// snap band
+						snap_band_ridge_r = snap_band_r - snap_band_ridge_difference_radius;
+						
 						translate([0,0,snap_band_y])
 						{
 							
 							// left
-							translate([snap_band_center_offset,0,0])
+							translate([snap_band_center_offset,box_indent_size[1]/2,0])
 								rotate([-90,0,0])
-									cylinder(r=snap_band_r, h=box_indent_size[1]);
+									cylinder(r=snap_band_ridge_r, h=box_indent_size[1]*snap_band_percentage/100, center=true);
 							
 							// right
-							translate([box_indent_size[0] - snap_band_center_offset,0,0])
+							translate([box_indent_size[0] - snap_band_center_offset,box_indent_size[1]/2,0])
 								rotate([-90,0,0])
-									cylinder(r=snap_band_r, h=box_indent_size[1]);
+									cylinder(r=snap_band_ridge_r, h=box_indent_size[1]*snap_band_percentage/100, center=true);
 							
 							// front
-							translate([0,snap_band_center_offset,0])
+							translate([box_indent_size[0]/2,snap_band_center_offset,0])
 								rotate([0,90,0])
-									cylinder(r=snap_band_r, h=box_indent_size[0]);
+									cylinder(r=snap_band_ridge_r, h=box_indent_size[0]*snap_band_percentage/100, center=true);
 							
 							
 							// back
-							translate([0,box_indent_size[1] - snap_band_center_offset,0])
+							translate([box_indent_size[0]/2,box_indent_size[1] - snap_band_center_offset,0])
 								rotate([0,90,0])
-									cylinder(r=snap_band_r, h=box_indent_size[0]);
+									cylinder(r=snap_band_ridge_r, h=box_indent_size[0]*snap_band_percentage/100, center=true);
 						}
 					}
 				}
@@ -217,28 +225,31 @@ module lid()
 				cube(lid_indent_size);
 			
 				// snap band
+				lid_snap_band_length = min(lid_indent_size[1]*snap_band_percentage/100+snap_band_ridge_difference_length,lid_indent_size[1]);
+				lid_snap_band_width = min(lid_indent_size[0]*snap_band_percentage/100+snap_band_ridge_difference_length,lid_indent_size[0]);
+				
 				translate([0,0,snap_band_y])
 				{
 					// left
-					translate([snap_band_center_offset,0,0])
+					translate([snap_band_center_offset,lid_indent_size[1]/2,0])
 						rotate([-90,0,0])
-							cylinder(r=snap_band_r, h=lid_indent_size[1]);
+							cylinder(r=snap_band_r, h=lid_snap_band_length, center=true);
 					
 					// right
-					translate([lid_indent_size[0] - snap_band_center_offset,0,0])
+					translate([lid_indent_size[0] - snap_band_center_offset,lid_indent_size[1]/2,0])
 						rotate([-90,0,0])
-							cylinder(r=snap_band_r, h=lid_indent_size[1]);
+							cylinder(r=snap_band_r, h=lid_snap_band_length, center=true);
 					
 					// front
-					translate([0,snap_band_center_offset,0])
+					translate([lid_indent_size[0]/2,snap_band_center_offset,0])
 						rotate([0,90,0])
-							cylinder(r=snap_band_r, h=lid_indent_size[0]);
+							cylinder(r=snap_band_r, h=lid_snap_band_width, center=true);
 					
 					
 					// back
-					translate([0,lid_indent_size[1] - snap_band_center_offset,0])
+					translate([lid_indent_size[0]/2,lid_indent_size[1] - snap_band_center_offset,0])
 						rotate([0,90,0])
-							cylinder(r=snap_band_r, h=lid_indent_size[0]);
+							cylinder(r=snap_band_r, h=lid_snap_band_width, center=true);
 				}
 			}
 			
