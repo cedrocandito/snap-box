@@ -56,6 +56,10 @@ $fa = 3;
 
 // ------------------------------------------------------------
 
+// TODO:
+// - parametrizzare snappy flaps
+// - se snappy flaps separare divisori dal muro (solo parte alta)
+
 half_gap = gap / 2;
 shell_half_thickness = shell_thickness / 2;
 inner_size = [width, length, height];
@@ -96,6 +100,7 @@ module box()
 	box_indent_size = outer_size - [shell_thickness+gap,shell_thickness+gap,0];
 	union()
 	{
+		// (outer box - inner space - indent)
 		difference()
 		{
 			// outer surface
@@ -106,43 +111,47 @@ module box()
 				cube(inner_size + [0,0,0.01]);
 			
 			// indent
+			// snap band + (larger cube - smaller cube)
 			translate([-0.01,-0.01,shell_thickness + height - lid_wall_height])
 			{
-				difference()
+				union()
 				{
-					cube(outer_size+[0.02,0.02,0.02]);
 					translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
-					union()
 					{
-						cube(box_indent_size);
-						
 						// snap band
-						snap_band_ridge_r = snap_band_r - snap_band_ridge_difference_radius;
+
+						box_snap_band_length = min(box_indent_size[1]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[1]);
+						box_snap_band_width = min(box_indent_size[0]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[0]);
 						
 						translate([0,0,snap_band_y])
 						{
-							
 							// left
-							translate([snap_band_center_offset,box_indent_size[1]/2,0])
+							translate([-snap_band_center_offset,box_indent_size[1]/2,0])
 								rotate([-90,0,0])
-									cylinder(r=snap_band_ridge_r, h=box_indent_size[1]*snap_band_percentage/100, center=true);
+									cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
 							
 							// right
-							translate([box_indent_size[0] - snap_band_center_offset,box_indent_size[1]/2,0])
+							translate([box_indent_size[0] + snap_band_center_offset,box_indent_size[1]/2,0])
 								rotate([-90,0,0])
-									cylinder(r=snap_band_ridge_r, h=box_indent_size[1]*snap_band_percentage/100, center=true);
+									cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
 							
 							// front
-							translate([box_indent_size[0]/2,snap_band_center_offset,0])
+							translate([box_indent_size[0]/2,-snap_band_center_offset,0])
 								rotate([0,90,0])
-									cylinder(r=snap_band_ridge_r, h=box_indent_size[0]*snap_band_percentage/100, center=true);
-							
+									cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
 							
 							// back
-							translate([box_indent_size[0]/2,box_indent_size[1] - snap_band_center_offset,0])
+							translate([box_indent_size[0]/2,box_indent_size[1] + snap_band_center_offset,0])
 								rotate([0,90,0])
-									cylinder(r=snap_band_ridge_r, h=box_indent_size[0]*snap_band_percentage/100, center=true);
+									cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
 						}
+					}
+					
+					difference()
+					{
+						cube(outer_size+[0.02,0.02,0.02]);
+						translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
+							cube(box_indent_size);
 					}
 				}
 			}
@@ -208,55 +217,51 @@ module box()
 
 module lid()
 {
+	// (outer cube - (inner space - snap bands))
 	difference()
 	{
 		// outer surface
 		half_rounded_box(lid_outer_size, corner_radius, bottom=true);
 		
-		// inner space
 		lid_indent_offset = shell_half_thickness - half_gap;
 		lid_indent_size = outer_size - [shell_thickness-gap,shell_thickness-gap,0];
 		
-		intersection()
+		translate([lid_indent_offset, lid_indent_offset, shell_thickness])
 		{
-			translate([lid_indent_offset, lid_indent_offset, shell_thickness])
-			union()
+			difference()
 			{
+				// inner space
 				cube(lid_indent_size);
 			
 				// snap band
-				lid_snap_band_length = min(lid_indent_size[1]*snap_band_percentage/100+snap_band_ridge_difference_length,lid_indent_size[1]);
-				lid_snap_band_width = min(lid_indent_size[0]*snap_band_percentage/100+snap_band_ridge_difference_length,lid_indent_size[0]);
+				lid_snap_band_length = lid_indent_size[1]*snap_band_percentage/100;
+				lid_snap_band_width = lid_indent_size[0]*snap_band_percentage/100;
+				snap_band_ridge_r = snap_band_r - snap_band_ridge_difference_radius;
 				
 				translate([0,0,snap_band_y])
 				{
 					// left
-					translate([snap_band_center_offset,lid_indent_size[1]/2,0])
+					translate([-snap_band_center_offset,lid_indent_size[1]/2,0])
 						rotate([-90,0,0])
-							cylinder(r=snap_band_r, h=lid_snap_band_length, center=true);
+							cylinder(r=snap_band_ridge_r, h=lid_snap_band_length, center=true);
 					
 					// right
-					translate([lid_indent_size[0] - snap_band_center_offset,lid_indent_size[1]/2,0])
+					translate([lid_indent_size[0] + snap_band_center_offset,lid_indent_size[1]/2,0])
 						rotate([-90,0,0])
-							cylinder(r=snap_band_r, h=lid_snap_band_length, center=true);
+							cylinder(r=snap_band_ridge_r, h=lid_snap_band_length, center=true);
 					
 					// front
-					translate([lid_indent_size[0]/2,snap_band_center_offset,0])
+					translate([lid_indent_size[0]/2,-snap_band_center_offset,0])
 						rotate([0,90,0])
-							cylinder(r=snap_band_r, h=lid_snap_band_width, center=true);
+							cylinder(r=snap_band_ridge_r, h=lid_snap_band_width, center=true);
 					
 					
 					// back
-					translate([lid_indent_size[0]/2,lid_indent_size[1] - snap_band_center_offset,0])
+					translate([lid_indent_size[0]/2,lid_indent_size[1] + snap_band_center_offset,0])
 						rotate([0,90,0])
-							cylinder(r=snap_band_r, h=lid_snap_band_width, center=true);
+							cylinder(r=snap_band_ridge_r, h=lid_snap_band_width, center=true);
 				}
 			}
-			
-			/* This intersections is needed to prevent the snap band cylinders
-			to "carve" the floor. */
-			translate([0,0,shell_thickness+0.001])
-				cube(outer_size);
 		}
 	}
 }
