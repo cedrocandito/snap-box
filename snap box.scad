@@ -20,7 +20,9 @@ shell_thickness = 1.8;
 corner_radius = 1;
 // Don't fix the snap band wall at the corners, make four "flaps" instead; the lid will snap easily.
 snappy_flaps = true;
-// Add a slot in the front and back walls to help grabbing cards in the box. If 0 no slot will be cut. Note that for this to be aesthetically pleasing lid_wall_height should be equal to height.
+// Only used when snappy_flaps = true: size of the snappy flaps holes.
+snappy_flaps_gap_size = 1.0;
+// Add a slot of this width in the front and back walls to help grabbing cards in the box. If 0 no slot will be cut. Note that for this to be aesthetically pleasing lid_wall_height should be equal to height.
 cards_handling_slot_size = 0;
 // Internal dividers along the x axis; it is a list of percentages of the box's width. If the total is less than 100% the remaining space will be added on the right of the last divider . For example you can specify [15,15,25] to get 4 spaces of 15%, 15%, 25% and 45% of the box's width.
 dividers_x = [];
@@ -55,10 +57,6 @@ $fs = 0.2;
 $fa = 3;
 
 // ------------------------------------------------------------
-
-// TODO:
-// - parametrizzare snappy flaps
-// - se snappy flaps separare divisori dal muro (solo parte alta)
 
 half_gap = gap / 2;
 shell_half_thickness = shell_thickness / 2;
@@ -98,122 +96,166 @@ else
 module box()
 {
 	box_indent_size = outer_size - [shell_thickness+gap,shell_thickness+gap,0];
-	union()
+	
+	difference()
 	{
-		// (outer box - inner space - indent)
-		difference()
+		union()
 		{
-			// outer surface
-			half_rounded_box(box_outer_size, corner_radius, bottom=true);
-			
-			// inner space
-			translate([shell_thickness, shell_thickness, shell_thickness])
-				cube(inner_size + [0,0,0.01]);
-			
-			// indent
-			// snap band + (larger cube - smaller cube)
-			translate([-0.01,-0.01,shell_thickness + height - lid_wall_height])
+			// (outer box - inner space - indent)
+			difference()
 			{
-				union()
+				// outer surface
+				half_rounded_box(box_outer_size, corner_radius, bottom=true);
+				
+				// inner space
+				translate([shell_thickness, shell_thickness, shell_thickness])
+					cube(inner_size + [0,0,0.01]);
+				
+				// indent
+				// snap band + (larger cube - smaller cube)
+				translate([-0.01,-0.01,shell_thickness + height - lid_wall_height])
 				{
-					translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
+					union()
 					{
-						// snap band
-
-						box_snap_band_length = min(box_indent_size[1]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[1]);
-						box_snap_band_width = min(box_indent_size[0]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[0]);
-						
-						translate([0,0,snap_band_y])
+						translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
 						{
-							// left
-							translate([-snap_band_center_offset,box_indent_size[1]/2,0])
-								rotate([-90,0,0])
-									cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
+							// snap band
+
+							box_snap_band_length = min(box_indent_size[1]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[1]);
+							box_snap_band_width = min(box_indent_size[0]*snap_band_percentage/100+snap_band_ridge_difference_length,box_indent_size[0]);
 							
-							// right
-							translate([box_indent_size[0] + snap_band_center_offset,box_indent_size[1]/2,0])
-								rotate([-90,0,0])
-									cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
-							
-							// front
-							translate([box_indent_size[0]/2,-snap_band_center_offset,0])
-								rotate([0,90,0])
-									cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
-							
-							// back
-							translate([box_indent_size[0]/2,box_indent_size[1] + snap_band_center_offset,0])
-								rotate([0,90,0])
-									cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
+							translate([0,0,snap_band_y])
+							{
+								// left
+								translate([-snap_band_center_offset,box_indent_size[1]/2,0])
+									rotate([-90,0,0])
+										cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
+								
+								// right
+								translate([box_indent_size[0] + snap_band_center_offset,box_indent_size[1]/2,0])
+									rotate([-90,0,0])
+										cylinder(r=snap_band_r, h=box_snap_band_length, center=true);
+								
+								// front
+								translate([box_indent_size[0]/2,-snap_band_center_offset,0])
+									rotate([0,90,0])
+										cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
+								
+								// back
+								translate([box_indent_size[0]/2,box_indent_size[1] + snap_band_center_offset,0])
+									rotate([0,90,0])
+										cylinder(r=snap_band_r, h=box_snap_band_width, center=true);
+							}
+						}
+						
+						difference()
+						{
+							cube(outer_size+[0.02,0.02,0.02]);
+							translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
+								cube(box_indent_size);
 						}
 					}
-					
-					difference()
+				}
+			}
+			
+			// dividers
+			translate([shell_thickness, shell_thickness, shell_thickness])
+			{
+				// x axis
+				if (is_list(dividers_x) && len(dividers_x)>0)
+				{
+					for (i=[0:len(dividers_x)-1])
 					{
-						cube(outer_size+[0.02,0.02,0.02]);
-						translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
-							cube(box_indent_size);
+						percent_sum = sum_up_to_index_n(dividers_x,i);
+						assert(percent_sum < 100,"The sum of dividers_x must be less than 100");
+						offset = percent_sum*width/100;
+						translate([offset,0,0])
+						{
+							cube([dividers_thickness,length,height]);
+						}
+					}
+				}
+				
+				// y axis
+				if (is_list(dividers_y) && len(dividers_y)>0)
+				{
+					for (i=[0:len(dividers_y)-1])
+					{
+						percent_sum = sum_up_to_index_n(dividers_y,i);
+						assert(percent_sum < 100,"The sum of dividers_y must be less than 100");
+						offset = percent_sum*length/100;
+						translate([0,offset,0])
+						{
+							cube([width,dividers_thickness,height]);
+						}
 					}
 				}
 			}
+		}
+	
+		// snappy flaps separator holes
+		if (snappy_flaps)
+		{
+			flap_holes_size = [shell_thickness + snappy_flaps_gap_size, shell_thickness + snappy_flaps_gap_size, lid_wall_height + 0.01];
 			
-			// snappy flaps separator holes
-			if (snappy_flaps)
+			// corners
+			translate([0,0,shell_thickness + height - lid_wall_height])
 			{
-				flap_holes_size = [shell_thickness * 1.5, shell_thickness * 1.5, lid_wall_height + 0.01];
-				translate([0,0,shell_thickness + height - lid_wall_height])
-				{
+				// front left
+				cube(flap_holes_size);
+				
+				// front right
+				translate([outer_size[0]-flap_holes_size[0],0,0])
 					cube(flap_holes_size);
-					translate([outer_size[0]-flap_holes_size[0],0,0]) cube(flap_holes_size);
-					translate([0,outer_size[1]-flap_holes_size[1],0]) cube(flap_holes_size);
-					translate([outer_size[0]-flap_holes_size[0],outer_size[1]-flap_holes_size[1],0]) cube(flap_holes_size);
-				}
+				
+				// back left
+				translate([0,outer_size[1]-flap_holes_size[1],0])
+					cube(flap_holes_size);
+				
+				// back righe
+				translate([outer_size[0]-flap_holes_size[0],outer_size[1]-flap_holes_size[1],0])
+					cube(flap_holes_size);
 			}
 			
-			// card handling slot
-			if (cards_handling_slot_size > 0)
+			// gap between shell and dividers
+			translate([0,0,shell_thickness + height - lid_wall_height])
 			{
-				translate([(outer_size[0]-cards_handling_slot_size)/2,-0.01,shell_thickness])
-				{
-					cube([cards_handling_slot_size,outer_size[1]+0.02,inner_size[2]+0.01]);
-				}
+				// front
+				translate([shell_thickness, shell_thickness, 0])
+					cube([inner_size[0], snappy_flaps_gap_size, lid_wall_height + 0.01]);
+				
+				// back
+			  translate([shell_thickness, outer_size[1]-shell_thickness-snappy_flaps_gap_size, 0])
+					cube([inner_size[0], snappy_flaps_gap_size, lid_wall_height + 0.01]);
+				
+				// left
+				translate([shell_thickness, shell_thickness, 0])
+					cube([snappy_flaps_gap_size, inner_size[1], lid_wall_height + 0.01]);
+				
+				// right
+				translate([outer_size[0]-shell_thickness-snappy_flaps_gap_size, shell_thickness, 0])
+					cube([snappy_flaps_gap_size, inner_size[1], lid_wall_height + 0.01]);
+			}
+		}
+	
+		// card handling slot
+		if (cards_handling_slot_size > 0)
+		{
+			// front
+			translate([(outer_size[0]-cards_handling_slot_size)/2,-0.01,shell_thickness])
+			{
+				cube([cards_handling_slot_size,shell_thickness+0.02,inner_size[2]+0.01]);
+			}
+			
+			// back
+			translate([(outer_size[0]-cards_handling_slot_size)/2,outer_size[1] - shell_thickness - 0.01,shell_thickness])
+			{
+				cube([cards_handling_slot_size,shell_thickness+0.02,inner_size[2]+0.01]);
 			}
 		}
 		
-		// dividers
-		translate([shell_thickness, shell_thickness, shell_thickness])
-		{
-			// x axis
-			if (is_list(dividers_x) && len(dividers_x)>0)
-			{
-				for (i=[0:len(dividers_x)-1])
-				{
-					percent_sum = sum_up_to_index_n(dividers_x,i);
-					assert(percent_sum < 100,"The sum of dividers_x must be less than 100");
-					offset = percent_sum*width/100;
-					translate([offset,0,0])
-					{
-						cube([dividers_thickness,length,height]);
-					}
-				}
-			}
-			
-			// y axis
-			if (is_list(dividers_y) && len(dividers_y)>0)
-			{
-				for (i=[0:len(dividers_y)-1])
-				{
-					percent_sum = sum_up_to_index_n(dividers_y,i);
-					assert(percent_sum < 100,"The sum of dividers_y must be less than 100");
-					offset = percent_sum*length/100;
-					translate([0,offset,0])
-					{
-						cube([width,dividers_thickness,height]);
-					}
-				}
-			}
-		}
-	}
-}
+	} // end of root difference()
+} // end of module
 
 module lid()
 {
