@@ -1,6 +1,6 @@
 /* [Part selection] */
-// Select the part to be rendered: "box" or "lid".
-render_part = "box"; // [box,lid]
+// Select the part to be rendered: "box", "lid" or "both".
+render_part = "both"; // [box,lid,both]
 
 /* [Box size] */
 // Size of box inside, along the Y axis. Add 2 times shell_thickness to calculate the outer size.
@@ -30,6 +30,8 @@ dividers_x = [];
 dividers_y = [];
 // Thickness of the dividers (ignored if both dividers_x and dividers_y are empty).
 dividers_thickness = 0.8;
+// Distance between box and lid when render_part = "both" (ignored if only one part is selected for rendering).
+box_and_lid_distance = 3;
 
 /* [Snap band] */
 
@@ -86,6 +88,15 @@ if (render_part=="box")
 else if (render_part=="lid")
 {
 	lid();
+}
+else if (render_part=="both")
+{
+	union()
+	{
+		box();
+		translate([box_outer_size[0] + box_and_lid_distance, 0, 0])
+			lid();
+	}
 }
 else
 {
