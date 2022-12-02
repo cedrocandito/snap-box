@@ -270,6 +270,8 @@ module box()
 
 module lid()
 {
+	lid_snap_band_y = lid_wall_height - snap_band_y;
+	
 	// (outer cube - (inner space - snap bands))
 	difference()
 	{
@@ -291,7 +293,7 @@ module lid()
 				lid_snap_band_width = lid_indent_size[0]*snap_band_percentage/100;
 				snap_band_ridge_r = snap_band_r - snap_band_ridge_difference_radius;
 				
-				translate([0,0,snap_band_y])
+				translate([0,0,lid_snap_band_y])
 				{
 					// left
 					translate([-snap_band_center_offset,lid_indent_size[1]/2,0])
