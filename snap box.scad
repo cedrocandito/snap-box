@@ -12,7 +12,7 @@ height = 30;
 // Height of the lid wall. Must be greater or equal than snap_band_width and less or equal than the height of the box.
 lid_wall_height = 12;
 // Overall thickness of the box.
-shell_thickness = 1.8;
+shell_thickness = 2.2;
 
 /* [Options] */
 
@@ -36,15 +36,15 @@ box_and_lid_distance = 3;
 /* [Snap band] */
 
 // Height of the snap band along the lid-to-box interface.
-snap_band_width = 3;
+snap_band_width = 2.5;
 // Thickness of the snap band along the lid-to-box interface.
-snap_band_thickness = 0.45;
+snap_band_thickness = 0.6;
 // Position of the snap band: top, bottom or middle of the lid wall.
 snap_band_position = "top"; // [top,middle,bottom]
 // Distance between the snaop band and the top or bottom (depending on snap_band_position) edge of the lid wall. Ignored if snap_band_position is "middle".
 snap_band_offset = 3;
 // Percentage of length/width to cover with the snap band. Lower values make the lid stronger and allow a thinner shell thickness, higher values make the box more... well, "snappy".
-snap_band_percentage = 50;	// [1:100]
+snap_band_percentage = 50; // [1:100]
 // How much smaller the snap band ridge radius is than the groove radius.
 snap_band_ridge_difference_radius = 0.1;
 // How much longer the snap band groove is than the ridge.
