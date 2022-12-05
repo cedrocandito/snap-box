@@ -36,11 +36,11 @@ box_and_lid_distance = 3;
 /* [Snap band] */
 
 // Height of the snap band along the lid-to-box interface.
-snap_band_width = 2.5;
+snap_band_width = 3;
 // Thickness of the snap band along the lid-to-box interface.
-snap_band_thickness = 0.6;
+snap_band_thickness = 0.5;
 // Position of the snap band: top, bottom or middle of the lid wall.
-snap_band_position = "top"; // [top,middle,bottom]
+snap_band_position = "middle"; // [top,middle,bottom]
 // Distance between the snaop band and the top or bottom (depending on snap_band_position) edge of the lid wall. Ignored if snap_band_position is "middle".
 snap_band_offset = 3;
 // Percentage of length/width to cover with the snap band. Lower values make the lid stronger and allow a thinner shell thickness, higher values make the box more... well, "snappy".
@@ -52,7 +52,7 @@ snap_band_ridge_difference_length = 4;
 // Gap between box and lid.
 gap = 0.1;
 // Ratio between the inner (box) half-shell thickness and the full shell thickness. For example, if inner_half_shell_ratio is 0.65, thickness is 2.0 mm and gap is 0.1, then the inner half-shell will be 1.30 mm thick and the outer half shell will be 0.7 mm thick.
-inner_half_shell_ratio = 0.60;
+inner_half_shell_ratio = 0.6; // [0.1:0.05:0.9]
 
 /* [Resolution] */
 // Minimum size of a fragment.
