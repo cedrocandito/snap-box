@@ -51,6 +51,8 @@ snap_band_ridge_difference_radius = 0.1;
 snap_band_ridge_difference_length = 4;
 // Gap between box and lid.
 gap = 0.1;
+// Ratio between the inner (box) half-shell thickness and the full shell thickness. For example, if inner_half_shell_ratio is 0.65, thickness is 2.0 mm and gap is 0.1, then the inner half-shell will be 1.30 mm thick and the outer half shell will be 0.7 mm thick.
+inner_half_shell_ratio = 0.60;
 
 /* [Resolution] */
 // Minimum size of a fragment.
@@ -61,7 +63,8 @@ $fa = 3;
 // ------------------------------------------------------------
 
 half_gap = gap / 2;
-shell_half_thickness = shell_thickness / 2;
+inner_half_shell_thickness = inner_half_shell_ratio * shell_thickness;
+outer_half_shell_thickness = shell_thickness - inner_half_shell_thickness;
 inner_size = [width, length, height];
 outer_size = [width + 2*shell_thickness, length + 2*shell_thickness, height + 2*shell_thickness];
 box_outer_size = outer_size - [0,0,shell_thickness];
@@ -106,7 +109,7 @@ else
 
 module box()
 {
-	box_indent_size = outer_size - [shell_thickness+gap,shell_thickness+gap,0];
+	box_indent_size = outer_size - [outer_half_shell_thickness*2+gap,outer_half_shell_thickness*2+gap,0];
 	
 	difference()
 	{
@@ -128,7 +131,7 @@ module box()
 				{
 					union()
 					{
-						translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
+						translate([outer_half_shell_thickness+half_gap, outer_half_shell_thickness+half_gap,0])
 						{
 							// snap band
 
@@ -162,7 +165,7 @@ module box()
 						difference()
 						{
 							cube(outer_size+[0.02,0.02,0.02]);
-							translate([shell_half_thickness+half_gap, shell_half_thickness+half_gap,0])
+							translate([outer_half_shell_thickness+half_gap, outer_half_shell_thickness+half_gap,0])
 								cube(box_indent_size);
 						}
 					}
@@ -278,8 +281,8 @@ module lid()
 		// outer surface
 		half_rounded_box(lid_outer_size, corner_radius, bottom=true);
 		
-		lid_indent_offset = shell_half_thickness - half_gap;
-		lid_indent_size = outer_size - [shell_thickness-gap,shell_thickness-gap,0];
+		lid_indent_offset = outer_half_shell_thickness - half_gap;
+		lid_indent_size = outer_size - [outer_half_shell_thickness*2-gap, outer_half_shell_thickness*2-gap, 0];
 		
 		translate([lid_indent_offset, lid_indent_offset, shell_thickness])
 		{
