@@ -1,6 +1,6 @@
 /* [Part selection] */
-// Select the part to be rendered: "box", "lid" or "both".
-render_part = "both"; // [box,lid,both]
+// Select the part to be rendered: "box", "lid", "both" or "none". Use "none" and manually invoke box() or lid() when you include this file in your own design.
+render_part = "both"; // [box,lid,both,none]
 
 /* [Box size] */
 // Size of box inside, along the Y axis. Add 2 times shell_thickness to calculate the outer size.
@@ -100,6 +100,10 @@ else if (render_part=="both")
 		translate([box_outer_size[0] + box_and_lid_distance, 0, 0])
 			lid();
 	}
+}
+else if (render_part=="none")
+{
+	// do nothing
 }
 else
 {
