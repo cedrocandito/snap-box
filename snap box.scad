@@ -50,7 +50,7 @@ snap_band_ridge_difference_radius = 0.1;
 // How much longer the snap band groove is than the ridge.
 snap_band_ridge_difference_length = 4;
 // Gap between box and lid.
-gap = 0.1;
+gap = 0.1;	// [0:0.01:0.5]
 // Ratio between the inner (box) half-shell thickness and the full shell thickness. For example, if inner_half_shell_ratio is 0.65, thickness is 2.0 mm and gap is 0.1, then the inner half-shell will be 1.30 mm thick and the outer half shell will be 0.7 mm thick.
 inner_half_shell_ratio = 0.6; // [0.1:0.05:0.9]
 
